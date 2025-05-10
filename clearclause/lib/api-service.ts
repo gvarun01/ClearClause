@@ -39,10 +39,11 @@ const DEMO_DATA = {
   },
 }
 
-// Check if we're in development mode
-const isDevelopment = process.env.NEXT_PUBLIC_APP_ENV === "development"
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+// Force real API calls unless explicitly in demo mode
+const isDevelopment = process.env.NEXT_PUBLIC_APP_ENV === "demo"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
+console.log("")
 // Simulate network delay for development mode
 const simulateNetworkDelay = (min = 500, max = 2000) => {
   const delay = Math.floor(Math.random() * (max - min + 1)) + min

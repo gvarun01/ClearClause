@@ -67,11 +67,12 @@ export default function Home() {
   }
 
   const handleAnalyze = useCallback(async () => {
+    console.log("button clicked")
     if (!inputText.trim()) {
       setInputError("Please enter legal text or upload a document.")
       return
     }
-
+    console.log("button clicked")
     setInputError("")
 
     try {

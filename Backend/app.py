@@ -3,20 +3,28 @@ from flask_cors import CORS
 from pdf_to_text import pdf_to_text
 from summarize import summarize_text
 from extract_risks import extract_risks
-import google.generativeai as genai
+from openai import OpenAI
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# Enable CORS with specific settings
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:3000"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
-# Configure the Gemini API
-genai.configure(api_key="AIzaSyCptEb5xHHiEMRlPUV3C4RIN_37Czc_eks")
-
-# Initialize the model
-model = genai.GenerativeModel('gemini-pro')
+# Initialize OpenAI client
+client = OpenAI(
+    api_key="AIzaSyCptEb5xHHiEMRlPUV3C4RIN_37Czc_eks",
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+)
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_text():
+    print("analyzing text")
     try:
         data = request.get_json()
         text = data.get('text')
@@ -69,7 +77,6 @@ def followup():
         if not question or not original_text:
             return jsonify({"error": "Question and original text are required"}), 400
 
-        # Generate response using Gemini
         prompt = f"""You are a legal expert assistant. Answer the following question about this legal clause clearly and concisely.
 
 Original text: {original_text}
@@ -78,9 +85,15 @@ Question: {question}
 
 Answer:"""
 
-        response = model.generate_content(prompt)
-        answer = response.text
+        response = client.chat.completions.create(
+            model="gemini-2.0-flash",
+            messages=[
+                {"role": "system", "content": "You are a legal expert assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        )
         
+        answer = response.choices[0].message.content
         return jsonify({"answer": answer})
 
     except Exception as e:
@@ -107,4 +120,4 @@ def extract():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5000)
