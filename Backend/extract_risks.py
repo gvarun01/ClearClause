@@ -1,23 +1,25 @@
-import openai
-from openai import OpenAI
+import google.generativeai as genai
 
-client = OpenAI(
-    api_key="AIzaSyCptEb5xHHiEMRlPUV3C4RIN_37Czc_eks",
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
+# Configure the Gemini API
+genai.configure(api_key="AIzaSyCptEb5xHHiEMRlPUV3C4RIN_37Czc_eks")
+
+# Initialize the model
+model = genai.GenerativeModel('gemini-pro')
 
 def extract_risks(text):
     try:
-        response = client.chat.completions.create(
-            model="gemini-2.0-flash",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"Extract risks from the following text: {text}"}
-            ]
-        )
-        risks_text = response.choices[0].message.content
+        prompt = f"""You are a legal expert. Analyze the following legal clause and identify potential risks. For each risk, provide the term and a brief explanation of why it's risky. Format each risk as "Term: Explanation".
+
+Legal clause:
+{text}
+
+Risks:"""
+
+        response = model.generate_content(prompt)
+        risks_text = response.text
+        
         # Split risks by newline and return as an array
         risks_array = [risk.strip() for risk in risks_text.split('\n') if risk.strip()]
         return risks_array
     except Exception as e:
-        return [f"Error: {str(e)}"]
+        return [f"Error extracting risks: {str(e)}"]
