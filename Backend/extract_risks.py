@@ -1,8 +1,19 @@
 import openai
 from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get API key from environment variable
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is not set. Please set it in your .env file or environment variables.")
+
 
 client = OpenAI(
-    api_key="AIzaSyCptEb5xHHiEMRlPUV3C4RIN_37Czc_eks",
+    api_key= api_key,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 

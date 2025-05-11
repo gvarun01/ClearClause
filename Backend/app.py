@@ -5,20 +5,27 @@ from summarize import summarize_text
 from extract_risks import extract_risks
 from openai import OpenAI
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
-# Enable CORS with specific settings
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://localhost:3000"],
+        "origins": [
+            "http://localhost:3000",
+            os.environ.get("FRONTEND_URL", ""),
+        ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
 })
 
-# Initialize OpenAI client
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is not set. Please set it in your .env file or environment variables.")
+
 client = OpenAI(
-    api_key="AIzaSyCptEb5xHHiEMRlPUV3C4RIN_37Czc_eks",
+    api_key= api_key,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
@@ -120,4 +127,7 @@ def extract():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Get port from environment variable for Render
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("DEBUG", "False").lower() == "true"
+    app.run(host='0.0.0.0', port=port, debug=debug)
